@@ -1,6 +1,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #define STBI_NO_LINEAR
@@ -87,6 +88,9 @@ int main(int argc, char **argv)
     // We found
     // Width , Hight , Channels , Raw Pixels
 
+    clock_t start, end;
+    double cpu_time_used;
+
 //--------------------------------------------------------------------------------------------------------------
     // First we have to store binary data in SB
 
@@ -108,6 +112,7 @@ int main(int argc, char **argv)
     // Second we have to store png data in SP
 
 
+
     int png_encoded_size = 0;
     name = concatenateThreeStrings("SP/", argv[2], ".png");
     if (name == NULL)
@@ -115,15 +120,20 @@ int main(int argc, char **argv)
         printf("Memory allocation of name failed.\n");
     }
     
+    start = clock();
     png_encoded_size = stbi_write_png(name, w, h, channels, pixels, 0);
+    end = clock();
 
-    printf("\nPNG ENCODE SIZE - %d\n",png_encoded_size);
+
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+
 
     if (!png_encoded_size) {
     	printf("Couldn't write/encode png %s\n", argv[2]);
     	exit(1);
+    } else {
+        printf("\nPNG ENCODE TIME -\t%lf \tSIZE -\t%d\n", cpu_time_used, png_encoded_size);
     }
-
 
 
    //--------------------------------------------------------------------------------------------------------------
@@ -135,20 +145,23 @@ int main(int argc, char **argv)
     {
         printf("Memory allocation of name failed.\n");
     }
+
+    start = clock();
     qoi_encoded_size = qoi_write(name, pixels, &(qoi_desc){
     	.width = w,
     	.height = h,
     	.channels = channels,
     	.colorspace = QOI_SRGB
     });
+    end = clock();
 
-    printf("\nQOI ENCODE SIZE - %d\n",qoi_encoded_size);
-
-
-
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+    
     if (!qoi_encoded_size) {
     	printf("Couldn't write/encode qoi %s\n", argv[2]);
     	exit(1);
+    } else {
+        printf("\nQOI ENCODE TIME -\t%lf \tSIZE - \t%d\n", cpu_time_used, qoi_encoded_size);
     }
 
 
