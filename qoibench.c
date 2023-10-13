@@ -164,8 +164,66 @@ int main(int argc, char **argv)
         printf("\nQOI ENCODE TIME -\t%lf \tSIZE - \t%d\n", cpu_time_used, qoi_encoded_size);
     }
 
-
     free(pixels);
     free(name);
+
+    //DECODE TIME CALCULATION
+
+    //PNG Decode Time
+    name = concatenateThreeStrings("SP/", argv[2], ".png");
+    if (name == NULL)
+    {
+        printf("Memory allocation of name failed.\n");
+    }
+    if (!stbi_info(name, &w, &h, &channels))
+    {
+        printf("Couldn't read header %s\n", argv[1]);
+        exit(1);
+    }
+
+    // Force all odd encodings to be RGBA
+    if (channels != 3)
+    {
+        channels = 4;
+    }
+
+    start = clock();
+    pixels = (void *)stbi_load(argv[1], &w, &h, NULL, channels);
+    end = clock();
+    if (pixels == NULL)
+    {
+        printf("Couldn't load/decode %s\n", name);
+        exit(1);
+    }else{
+        cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+        printf("\nPNG DECODE TIME -\t%lf\n", cpu_time_used);
+    }
+
+
+    //QOI Decode Time
+    name = concatenateThreeStrings("SQ/", argv[2], ".qoi");
+    if (name == NULL)
+    {
+        printf("Memory allocation of name failed.\n");
+    }
+
+        qoi_desc desc;
+
+        start = clock();
+        pixels = qoi_read(name , &desc, 0);
+        end = clock();
+
+        if (pixels == NULL)
+        {
+            printf("Couldn't load/decode %s\n", name);
+            exit(1);
+        }else{
+            cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+        printf("\nQOI DECODE TIME -\t%lf\n", cpu_time_used);
+        }
+
+
+
+
     return 0;
 }
